@@ -194,37 +194,6 @@ int saveTrainingsToFile(std::string filename, const std::vector<TrainingItem> &t
     return 0;
 }
 
-void debugGenerateTraining() {
-    std::vector<TrainingItem> trainings;
-    TrainingItem tmp;
-    tmp.weather = QString("Clear");
-    tmp.training = QString("This, is a test");
-    tmp.date = QDate::fromString("05/11/2015","dd/MM/yyyy");
-    tmp.hour = 0.5;
-    tmp.feeling = 10;
-    tmp.daily_objective = QString("Random daily objective");
-    tmp.TSS = 120;
-    tmp.Km_per_day = 76;
-    tmp.hour_objective = 1.2;
-    tmp.TSS_objective = 50;
-    tmp.category = QString("Base week");
-    tmp.muscu = QString("No muscu");
-    tmp.muscu_objective = QString("Some objective");
-    tmp.km_per_week_objective = 520;
-    tmp.hour_per_week_objective = 20;
-    tmp.TSS_per_week_objective = 1530;
-    trainings.push_back(tmp);
-    trainings.push_back(tmp);
-    trainings.push_back(tmp);
-    trainings.push_back(tmp);
-    trainings.push_back(tmp);
-    trainings.push_back(tmp);
-    trainings.push_back(tmp);
-    trainings.push_back(tmp);
-
-    saveTrainingsToFile("test_training.csv", trainings);
-}
-
 TrainingItem blankDay() {
     TrainingItem tmp;
     tmp.weather = QString("Clear");
@@ -680,11 +649,12 @@ void ThemeWidget::saveWorkout()
 
     std::cout<<"Add training"<<std::endl;
     dayfound->date = m_ui->dateEdit_2->date(); // make sure of the date
-    if (dayfound->weather.size() == 0 || dayfound->weather.compare("Clear")) // Overwrite if nothing of clear sky
-        dayfound->weather = m_ui->WeatherCombo->currentText();
+
+    dayfound->weather = m_ui->WeatherCombo->currentText();
 
     if(dayfound->training.size() > 0)
         dayfound->training.append("; ");
+
     dayfound->training.append(m_ui->CommentLineEdit->text());
 
     dayfound->TSS += m_ui->TSSSpinBox->value();
