@@ -317,6 +317,9 @@ ThemeWidget::ThemeWidget(QWidget *parent) :
     m_ui->WeekWidget->setHorizontalHeaderLabels(mTableHeader);
     m_ui->WeekWidget->verticalHeader()->setVisible(false);
 
+    QDate today = QDate::currentDate();
+    m_ui->dateEdit->setDate(today);
+
     mTrainings = loadTrainingsFromFile("test_training.csv");
     debugPrintTraining(mTrainings);
 
@@ -583,7 +586,7 @@ void ThemeWidget::updateUI()
 
     // TODO: move to updatePlan (plan page)
     QDate today = QDate::currentDate();
-    m_ui->dateEdit->setDate(today);
+    m_ui->dateEdit_2->setDate(today);
 }
 
 void ThemeWidget::saveTrainingPlan()
@@ -638,20 +641,20 @@ void ThemeWidget::saveWorkout()
 
     // Search for an other training on the same day
     for (auto it = mTrainings.begin(); it!= mTrainings.end(); it++) {
-        if (it->date == m_ui->dateEdit->date()) {
+        if (it->date == m_ui->dateEdit_2->date()) {
             dayfound = it;
             break;
         }
     }
     if (dayfound == mTrainings.end()) {
-        for (auto it = mTrainings.begin(); it!= mTrainings.end() && it->date.daysTo(m_ui->dateEdit->date()) > 0; it++)
+        for (auto it = mTrainings.begin(); it!= mTrainings.end() && it->date.daysTo(m_ui->dateEdit_2->date()) > 0; it++)
             inserthere = it+1;
         TrainingItem tmp = blankDay();
         dayfound = mTrainings.insert(inserthere, tmp);
     }
 
     std::cout<<"Add training"<<std::endl;
-    dayfound->date = m_ui->dateEdit->date(); // make sure of the date
+    dayfound->date = m_ui->dateEdit_2->date(); // make sure of the date
     if (dayfound->weather.size() == 0 || dayfound->weather.compare("Clear")) // Overwrite if nothing of clear sky
         dayfound->weather = m_ui->comboBox->currentText();
 
