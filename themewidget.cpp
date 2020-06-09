@@ -652,23 +652,30 @@ void ThemeWidget::saveWorkout()
 
     dayfound->weather = m_ui->WeatherCombo->currentText();
 
-    if(dayfound->training.size() > 0)
-        dayfound->training.append("; ");
-
-    dayfound->training.append(m_ui->CommentLineEdit->text());
-
-    dayfound->TSS += m_ui->TSSSpinBox->value();
-
-    dayfound->Km_per_day += m_ui->KmDoubleSpinBox->value();
-
     dayfound->feeling = m_ui->FeelingSpinBox->value(); // Overwrite feeling
 
-    dayfound->hour += m_ui->DurationDoubleSpinBox->value();
+    if (m_ui->checkBox->isChecked()) {
+        dayfound->training = m_ui->CommentLineEdit->text();
+        dayfound->TSS = m_ui->TSSSpinBox->value();
+        dayfound->Km_per_day = m_ui->KmDoubleSpinBox->value();
+        dayfound->hour = m_ui->DurationDoubleSpinBox->value();
+        dayfound->muscu = m_ui->MuscuLineEdit->text();
+    } else {
+        if(dayfound->training.size() > 0)
+            dayfound->training.append("; ");
 
-    if(dayfound->muscu.size() > 0)
-        dayfound->muscu.append("; ");
-    dayfound->muscu.append(m_ui->MuscuLineEdit->text());
+        dayfound->training.append(m_ui->CommentLineEdit->text());
 
+        dayfound->TSS += m_ui->TSSSpinBox->value();
+
+        dayfound->Km_per_day += m_ui->KmDoubleSpinBox->value();
+
+        dayfound->hour += m_ui->DurationDoubleSpinBox->value();
+
+        if(dayfound->muscu.size() > 0)
+            dayfound->muscu.append("; ");
+        dayfound->muscu.append(m_ui->MuscuLineEdit->text());
+    }
     saveToFile();
     updateUI();
 }
