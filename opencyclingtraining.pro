@@ -8,7 +8,7 @@ SOURCES += \
     main.cpp \
     themewidget.cpp
 
-target.path = $$[QT_INSTALL_EXAMPLES]/charts/chartthemes
+target.path = build
 INSTALLS += target
 
 FORMS += \
