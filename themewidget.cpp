@@ -547,15 +547,10 @@ void ThemeWidget::updateCalendar() {
 
 void ThemeWidget::updateMyWeek() {
     QDate today = QDate::currentDate();
-    std::cout<<"Today is: "<<today.toString().toStdString()<<std::endl;
-    std::cout<<"Day of the week: "<<today.dayOfWeek()<<std::endl;
-    std::cout<<"Week number: "<<today.weekNumber()<<std::endl;
-    QDate tomorrow = today.addDays(1);
-    std::cout<<"Tomorrow is: "<<tomorrow.toString().toStdString()<<std::endl;
-    std::cout<<"Day of the week: "<<tomorrow.dayOfWeek()<<std::endl;
-    std::cout<<"Week number: "<<tomorrow.weekNumber()<<std::endl;
 
+    m_ui->dateEdit_2->setDate(today);
     m_ui->todayLabel->setText(today.toString());
+
     // Search training of the week
     size_t count = 0;
     m_ui->WeekWidget->clearContents();
@@ -575,6 +570,39 @@ void ThemeWidget::updateMyWeek() {
             m_ui->WeekWidget->setItem(count, 11, new QTableWidgetItem(it->muscu));
             m_ui->WeekWidget->setItem(count, 12, new QTableWidgetItem(it->muscu_objective));
             count++;
+            if (it->date == today) {
+                m_ui->label_12->setText(it->training);
+                m_ui->label_30->setText(it->daily_objective);
+
+                m_ui->label_13->setText(it->muscu_objective);
+                m_ui->label_32->setText(it->muscu);
+
+                m_ui->label_17->setText(QString::number(it->hour));
+                m_ui->label_14->setText(QString::number(it->hour_objective));
+
+                m_ui->label_18->setText(QString::number(it->Km_per_day));
+                m_ui->label_15->setText(QString::number(it->km_per_week_objective));
+
+                m_ui->label_19->setText(QString::number(it->TSS));
+                m_ui->label_16->setText(QString::number(it->TSS_objective));
+
+                m_ui->label_5->setText(it->weather);
+
+                if (it->hour_objective > 0)
+                    m_ui->progressBar->setValue(100*it->hour/it->hour_objective);
+                else
+                     m_ui->progressBar->setValue(100);
+
+                if (it->km_per_week_objective > 0)
+                    m_ui->progressBar_2->setValue(100*it->Km_per_day/it->km_per_week_objective);
+                else
+                    m_ui->progressBar_2->setValue(100);
+
+                if (it->TSS_objective > 0)
+                    m_ui->progressBar_3->setValue(100*it->TSS/it->TSS_objective);
+                else
+                    m_ui->progressBar_3->setValue(100);
+            }
         }
     }
 }
@@ -583,10 +611,6 @@ void ThemeWidget::updateUI()
 {
     updateCalendar();
     updateMyWeek();
-
-    // TODO: move to updatePlan (plan page)
-    QDate today = QDate::currentDate();
-    m_ui->dateEdit_2->setDate(today);
 }
 
 void ThemeWidget::saveTrainingPlan()
@@ -656,7 +680,7 @@ void ThemeWidget::saveWorkout()
     std::cout<<"Add training"<<std::endl;
     dayfound->date = m_ui->dateEdit_2->date(); // make sure of the date
     if (dayfound->weather.size() == 0 || dayfound->weather.compare("Clear")) // Overwrite if nothing of clear sky
-        dayfound->weather = m_ui->comboBox->currentText();
+        dayfound->weather = m_ui->WeatherCombo->currentText();
 
     if(dayfound->training.size() > 0)
         dayfound->training.append("; ");
