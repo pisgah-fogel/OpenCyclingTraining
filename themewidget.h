@@ -64,6 +64,7 @@ private Q_SLOTS:
     void saveTrainingPlan();
     void saveWorkout();
     void saveToFile();
+    void orderVector();
 
 private:
     DataTable generateRandomData(int listCount, int valueMax, int valueCount) const;

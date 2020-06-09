@@ -312,7 +312,7 @@ ThemeWidget::ThemeWidget(QWidget *parent) :
     m_ui->CalendarWidget->setHorizontalHeaderLabels(mTableHeader);
     m_ui->CalendarWidget->verticalHeader()->setVisible(false);
 
-    m_ui->WeekWidget->setRowCount(1);
+    m_ui->WeekWidget->setRowCount(7);
     m_ui->WeekWidget->setColumnCount(13);
     m_ui->WeekWidget->setHorizontalHeaderLabels(mTableHeader);
     m_ui->WeekWidget->verticalHeader()->setVisible(false);
@@ -523,6 +523,7 @@ QChart *ThemeWidget::createScatterChart() const
 void ThemeWidget::updateCalendar() {
     m_ui->CalendarWidget->setRowCount(mTrainings.size());
     size_t item_count = 0;
+    m_ui->CalendarWidget->clearContents();
     for (auto it = mTrainings.begin(); it!= mTrainings.end(); it++) {
         m_ui->CalendarWidget->setItem(item_count, 0, new QTableWidgetItem(it->date.toString()));
         m_ui->CalendarWidget->setItem(item_count, 1, new QTableWidgetItem(it->weather));
@@ -543,9 +544,18 @@ void ThemeWidget::updateCalendar() {
 
 void ThemeWidget::updateMyWeek() {
     QDate today = QDate::currentDate();
+    std::cout<<"Today is: "<<today.toString().toStdString()<<std::endl;
+    std::cout<<"Day of the week: "<<today.dayOfWeek()<<std::endl;
+    std::cout<<"Week number: "<<today.weekNumber()<<std::endl;
+    QDate tomorrow = today.addDays(1);
+    std::cout<<"Tomorrow is: "<<tomorrow.toString().toStdString()<<std::endl;
+    std::cout<<"Day of the week: "<<tomorrow.dayOfWeek()<<std::endl;
+    std::cout<<"Week number: "<<tomorrow.weekNumber()<<std::endl;
+
     m_ui->todayLabel->setText(today.toString());
     // Search training of the week
     size_t count = 0;
+    m_ui->WeekWidget->clearContents();
     for (auto it = mTrainings.begin(); it!= mTrainings.end(); it++) {
         if (today.weekNumber() == it->date.weekNumber()) {
             m_ui->WeekWidget->setItem(count, 0, new QTableWidgetItem(it->date.toString()));
@@ -579,38 +589,44 @@ void ThemeWidget::updateUI()
 void ThemeWidget::saveTrainingPlan()
 {
     std::cout<<"Add item in training plans"<<std::endl;
-    TrainingItem tmp = blankDay();
-    bool found_in_db = false;
+
+    std::vector<TrainingItem>::iterator dayfound = mTrainings.end();
+    std::vector<TrainingItem>::iterator inserthere = mTrainings.end();
+
     // Search for an other training on the same day
     for (auto it = mTrainings.begin(); it!= mTrainings.end(); it++) {
         if (it->date == m_ui->dateEdit->date()) {
             // TODO: ask if we want to override
-            tmp = *it;
-            found_in_db = true;
+            dayfound = it;
             break;
         }
     }
-    //date, weather, training, tss, km, hour
-    tmp.date = m_ui->dateEdit->date();
-    tmp.weather = m_ui->comboBox->currentText();
-    tmp.daily_objective = m_ui->textEdit->toPlainText();
-    tmp.TSS_objective = m_ui->spinBox->value();
-    tmp.km_per_week_objective = m_ui->spinBox_2->value();
-    tmp.hour_objective = m_ui->doubleSpinBox->value();
-
-    if (found_in_db) {
-        // TODO: make sur we want to override
-        for (TrainingItem &c : mTrainings) {
-            if (c.date == tmp.date) {
-                c = tmp;
-                // TODO: Success message, can be disabled
-                break;
-            }
-        }
-    } else {
-        mTrainings.push_back(tmp);
+    if (dayfound == mTrainings.end()) {
+        for (auto it = mTrainings.begin(); it!= mTrainings.end() && it->date.daysTo(m_ui->dateEdit->date()) > 0; it++)
+            inserthere = it+1;
+        TrainingItem tmp = blankDay();
+        dayfound = mTrainings.insert(inserthere, tmp);
     }
+
+    std::cout<<"Setting new day"<<std::endl;
+    dayfound->date = m_ui->dateEdit->date();
+    dayfound->weather = m_ui->comboBox->currentText();
+    dayfound->daily_objective = m_ui->textEdit->toPlainText();
+    dayfound->TSS_objective = m_ui->spinBox->value();
+    dayfound->km_per_week_objective = m_ui->spinBox_2->value();
+    dayfound->hour_objective = m_ui->doubleSpinBox->value();
+    orderVector();
     updateUI();
+}
+
+void ThemeWidget::orderVector()
+{
+    for (auto it = mTrainings.begin(); it!= mTrainings.end(); it++) {
+        auto it2 = it+1;
+        if ( it2 != mTrainings.end() && it->date.daysTo(it2->date) > 0) {
+            std::rotate(it, it2, it2);
+        }
+    }
 }
 
 void ThemeWidget::saveWorkout()
