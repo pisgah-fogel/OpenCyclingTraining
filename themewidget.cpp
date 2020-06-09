@@ -30,6 +30,10 @@
 #include "themewidget.h"
 #include "ui_themewidget.h"
 
+#include <iostream>
+#include <fstream>
+#include <string>
+
 #include <QtCharts/QChartView>
 #include <QtCharts/QPieSeries>
 #include <QtCharts/QPieSlice>
@@ -54,6 +58,182 @@
 #include <QtCharts/QBarCategoryAxis>
 #include <QtWidgets/QApplication>
 #include <QtCharts/QValueAxis>
+
+class TrainingItem {
+public:
+    QString weather;
+    QDate date;
+    QString training;
+    double hour;
+    unsigned short int feeling;
+    QString daily_objective;
+    double TSS;
+    double Km_per_day;
+    double hour_objective;
+    double TSS_objective;
+    QString category;
+    QString muscu;
+    QString muscu_objective;
+    double km_per_week_objective;
+    double hour_per_week_objective;
+    double TSS_per_week_objective;
+};
+
+std::vector<TrainingItem> loadTrainingsFromFile(std::string filename) {
+    std::vector<TrainingItem> database;
+    std::string line;
+    std::ifstream myfile (filename);
+
+    if (!myfile.is_open()) {
+        std::cout<<"Error: Cannot load training data from "<<filename<<std::endl;
+        return std::vector<TrainingItem>();
+    }
+
+    while (std::getline(myfile, line)) {
+        TrainingItem current_item;
+        std::string buffer;
+        bool in_apo = false;
+        int count_items = 0;
+        int count_lines = 0;
+
+        for (const char &c: line) {
+            if (c == '"') {
+                in_apo = !in_apo;
+            } else if (c == ',' && !in_apo) {
+                // save current item and start parsing next one
+                if (count_items == 0) {
+                    current_item.weather = QString::fromStdString(buffer);
+                } else if (count_items == 1) {
+                    current_item.date = QDate::fromString(QString::fromStdString(buffer));
+                } else if (count_items == 2) {
+                     current_item.training = QString::fromStdString(buffer);
+                } else if (count_items == 3) {
+                    try {
+                        current_item.hour = std::stod(buffer);
+                    } catch (...) {
+                        std::cout<<"Error: "<<buffer<<"is not a double"<<std::endl;
+                    }
+                } else if (count_items == 4) {
+                    current_item.feeling = (unsigned short int)std::stoi(buffer);
+                } else if (count_items == 5) {
+                    current_item.daily_objective = QString::fromStdString(buffer);
+                } else if (count_items == 6) {
+                    try {
+                        current_item.TSS = std::stod(buffer);
+                    } catch (...) {
+                        std::cout<<"Error: "<<buffer<<"is not a double"<<std::endl;
+                    }
+                } else if (count_items == 7) {
+                    try {
+                        current_item.Km_per_day = std::stod(buffer);
+                    } catch (...) {
+                        std::cout<<"Error: "<<buffer<<"is not a double"<<std::endl;
+                    }
+                } else if (count_items == 8) {
+                    current_item.hour_objective = std::stod(buffer);
+                } else if (count_items == 9) {
+                    current_item.TSS_objective = std::stod(buffer);
+                } else if (count_items == 10) {
+                    current_item.category = QString::fromStdString(buffer);
+                } else if (count_items == 11) {
+                    current_item.muscu = QString::fromStdString(buffer);
+                } else if (count_items == 12) {
+                    current_item.muscu_objective = QString::fromStdString(buffer);
+                } else if (count_items == 13) {
+                    current_item.km_per_week_objective = std::stod(buffer);
+                } else if (count_items == 14) {
+                    current_item.hour_per_week_objective = std::stod(buffer);
+                } else if (count_items == 15) {
+                    current_item.TSS_per_week_objective = std::stod(buffer);
+                    database.push_back(current_item);
+                } else {
+                    std::cout<<"Error: Line "<<count_lines<<"Too many items"<<std::endl;
+                }
+                count_items++;
+                buffer.clear();
+            } else {
+                buffer.push_back(c);
+            }
+        }
+        count_lines++;
+    }
+    myfile.close();
+
+    return database;
+}
+
+int saveTrainingsToFile(std::string filename, const std::vector<TrainingItem> &trainings) {
+    std::ofstream myfile;
+    size_t line_count = 0;
+    myfile.open(filename);
+    if (!myfile.is_open()) {
+        std::cout<<"Error: Cannot save training to "<<filename<<std::endl;
+        return 1;
+    }
+    for (auto it = trainings.begin(); it != trainings.end(); it++) {
+        myfile << "\"" << it->weather.toUtf8().constData() << "\",";
+        myfile << "\"" << it->date.toString().toUtf8().constData() << "\",";
+        myfile << "\"" << it->training.toUtf8().constData() << "\",";
+        myfile << "\"" << it->hour << "\",";
+        myfile << "\"" << it->feeling << "\",";
+        myfile << "\"" << it->daily_objective.toUtf8().constData() << "\",";
+        myfile << "\"" << it->TSS << "\",";
+        myfile << "\"" << it->Km_per_day << "\",";
+        myfile << "\"" << it->hour_objective << "\",";
+        myfile << "\"" << it->TSS_objective << "\",";
+        myfile << "\"" << it->category.toUtf8().constData() << "\",";
+        myfile << "\"" << it->muscu.toUtf8().constData() << "\",";
+        myfile << "\"" << it->muscu_objective.toUtf8().constData() << "\",";
+        myfile << "\"" << it->km_per_week_objective << "\",";
+        myfile << "\"" << it->hour_per_week_objective << "\",";
+        myfile << "\"" << it->TSS_per_week_objective << "\","<<std::endl;
+        line_count++;
+    }
+    std::cout<<"Training datas saved to file "<<filename<<" ("<<line_count<<" lines)"<<std::endl;
+    myfile.close();
+    return 0;
+}
+
+void debugGenerateTraining() {
+    std::vector<TrainingItem> trainings;
+    TrainingItem tmp;
+    tmp.weather = QString("Clear");
+    tmp.training = QString("This, is a test");
+    tmp.date = QDate::fromString("05/11/2015","dd/MM/yyyy");
+    tmp.hour = 0.5;
+    tmp.feeling = 10;
+    tmp.daily_objective = QString("Random daily objective");
+    tmp.TSS = 120;
+    tmp.Km_per_day = 76;
+    tmp.hour_objective = 1.2;
+    tmp.TSS_objective = 50;
+    tmp.category = QString("Base week");
+    tmp.muscu = QString("No muscu");
+    tmp.muscu_objective = QString("Some objective");
+    tmp.km_per_week_objective = 520;
+    tmp.hour_per_week_objective = 20;
+    tmp.TSS_per_week_objective = 1530;
+    trainings.push_back(tmp);
+    trainings.push_back(tmp);
+    trainings.push_back(tmp);
+    trainings.push_back(tmp);
+    trainings.push_back(tmp);
+    trainings.push_back(tmp);
+    trainings.push_back(tmp);
+    trainings.push_back(tmp);
+
+    saveTrainingsToFile("test_training.csv", trainings);
+}
+
+void debugPrintTraining(const std::vector<TrainingItem> &trainings)
+{
+    std::cout<<"Trainings contains: "<<trainings.size()<<" entry"<<std::endl;
+    for (auto it = trainings.begin(); it!= trainings.end(); it++) {
+        std::cout<<"Weather: "<<it->weather.toStdString()<<std::endl;
+        std::cout<<"Training: "<<it->training.toStdString()<<std::endl;
+    }
+    std::cout<<"-----------------"<<std::endl;
+}
 
 ThemeWidget::ThemeWidget(QWidget *parent) :
     QWidget(parent),
@@ -113,6 +293,10 @@ ThemeWidget::ThemeWidget(QWidget *parent) :
     m_ui->CalendarWidget->verticalHeader()->setVisible(false);
 
     m_ui->CalendarWidget->setItem(0, 1, new QTableWidgetItem("Hello"));
+
+    debugGenerateTraining();
+    std::vector<TrainingItem> tmp = loadTrainingsFromFile("test_training.csv");
+    debugPrintTraining(tmp);
 
     updateUI();
 }
