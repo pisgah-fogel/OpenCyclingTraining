@@ -229,6 +229,7 @@ void debugPrintTraining(const std::vector<TrainingItem> &trainings)
 {
     std::cout<<"Trainings contains: "<<trainings.size()<<" entry"<<std::endl;
     for (auto it = trainings.begin(); it!= trainings.end(); it++) {
+        std::cout<<"Date: "<<it->date.toString().toStdString()<<std::endl;
         std::cout<<"Weather: "<<it->weather.toStdString()<<std::endl;
         std::cout<<"Training: "<<it->training.toStdString()<<std::endl;
     }
@@ -500,5 +501,23 @@ QChart *ThemeWidget::createScatterChart() const
 
 void ThemeWidget::updateUI()
 {
+    m_ui->CalendarWidget->setRowCount(mTrainings.size());
+    size_t item_count = 0;
+    for (auto it = mTrainings.begin(); it!= mTrainings.end(); it++) {
+        m_ui->CalendarWidget->setItem(item_count, 0, new QTableWidgetItem(it->date.toString()));
+        m_ui->CalendarWidget->setItem(item_count, 1, new QTableWidgetItem(it->weather));
+        m_ui->CalendarWidget->setItem(item_count, 2, new QTableWidgetItem(it->training));
+        m_ui->CalendarWidget->setItem(item_count, 3, new QTableWidgetItem(it->daily_objective));
+        m_ui->CalendarWidget->setItem(item_count, 4, new QTableWidgetItem(QString::number(it->TSS)));
+        m_ui->CalendarWidget->setItem(item_count, 5, new QTableWidgetItem(QString::number(it->TSS_objective)));
+        m_ui->CalendarWidget->setItem(item_count, 6, new QTableWidgetItem(QString::number(it->Km_per_day)));
+        m_ui->CalendarWidget->setItem(item_count, 7, new QTableWidgetItem(QString::number(it->km_per_week_objective)));
+        m_ui->CalendarWidget->setItem(item_count, 8, new QTableWidgetItem(QString::number(it->feeling)));
+        m_ui->CalendarWidget->setItem(item_count, 9, new QTableWidgetItem(QString::number(it->hour)));
+        m_ui->CalendarWidget->setItem(item_count, 10, new QTableWidgetItem(QString::number(it->hour_objective)));
+        m_ui->CalendarWidget->setItem(item_count, 11, new QTableWidgetItem(it->muscu));
+        m_ui->CalendarWidget->setItem(item_count, 12, new QTableWidgetItem(it->muscu_objective));
+        item_count++;
+    }
 }
 
