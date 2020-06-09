@@ -61,6 +61,9 @@ public:
 
 private Q_SLOTS:
     void updateUI();
+    void saveTrainingPlan();
+    void saveWorkout();
+    void saveToFile();
 
 private:
     DataTable generateRandomData(int listCount, int valueMax, int valueCount) const;
@@ -74,6 +77,8 @@ private:
     QChart *createLineChart() const;
     QChart *createSplineChart() const;
     QChart *createScatterChart() const;
+    void updateMyWeek();
+    void updateCalendar();
 
 private:
     int m_listCount;

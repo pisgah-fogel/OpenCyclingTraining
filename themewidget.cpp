@@ -225,6 +225,27 @@ void debugGenerateTraining() {
     saveTrainingsToFile("test_training.csv", trainings);
 }
 
+TrainingItem blankDay() {
+    TrainingItem tmp;
+    tmp.weather = QString("Clear");
+    tmp.training = QString();
+    tmp.date = QDate::fromString("01/01/2050","dd/MM/yyyy");
+    tmp.hour = 0.0;
+    tmp.feeling = 0;
+    tmp.daily_objective = QString();
+    tmp.TSS = 0;
+    tmp.Km_per_day = 0;
+    tmp.hour_objective = 0;
+    tmp.TSS_objective = 0;
+    tmp.category = QString("Base week");
+    tmp.muscu = QString();
+    tmp.muscu_objective = QString();
+    tmp.km_per_week_objective = 0;
+    tmp.hour_per_week_objective = 0;
+    tmp.TSS_per_week_objective = 0;
+    return tmp;
+}
+
 void debugPrintTraining(const std::vector<TrainingItem> &trainings)
 {
     std::cout<<"Trainings contains: "<<trainings.size()<<" entry"<<std::endl;
@@ -286,16 +307,16 @@ ThemeWidget::ThemeWidget(QWidget *parent) :
 
     mTableHeader<<"Date"<<"Weather"<<"Description"<<"Target"<<"TSS"<<"TSS obj."<<"Km"<<"Km obj."<<"Feeling"<<"Duration"<<"Duration obj."<<"Musculation"<<"Muscu Target";
 
-    m_ui->CalendarWidget->setRowCount(7);
+    m_ui->CalendarWidget->setRowCount(1);
     m_ui->CalendarWidget->setColumnCount(13);
-
     m_ui->CalendarWidget->setHorizontalHeaderLabels(mTableHeader);
-
     m_ui->CalendarWidget->verticalHeader()->setVisible(false);
 
-    m_ui->CalendarWidget->setItem(0, 1, new QTableWidgetItem("Hello"));
+    m_ui->WeekWidget->setRowCount(1);
+    m_ui->WeekWidget->setColumnCount(13);
+    m_ui->WeekWidget->setHorizontalHeaderLabels(mTableHeader);
+    m_ui->WeekWidget->verticalHeader()->setVisible(false);
 
-    debugGenerateTraining();
     mTrainings = loadTrainingsFromFile("test_training.csv");
     debugPrintTraining(mTrainings);
 
@@ -499,8 +520,7 @@ QChart *ThemeWidget::createScatterChart() const
     return chart;
 }
 
-void ThemeWidget::updateUI()
-{
+void ThemeWidget::updateCalendar() {
     m_ui->CalendarWidget->setRowCount(mTrainings.size());
     size_t item_count = 0;
     for (auto it = mTrainings.begin(); it!= mTrainings.end(); it++) {
@@ -521,3 +541,85 @@ void ThemeWidget::updateUI()
     }
 }
 
+void ThemeWidget::updateMyWeek() {
+    QDate today = QDate::currentDate();
+    m_ui->todayLabel->setText(today.toString());
+    // Search training of the week
+    size_t count = 0;
+    for (auto it = mTrainings.begin(); it!= mTrainings.end(); it++) {
+        if (today.weekNumber() == it->date.weekNumber()) {
+            m_ui->WeekWidget->setItem(count, 0, new QTableWidgetItem(it->date.toString()));
+            m_ui->WeekWidget->setItem(count, 1, new QTableWidgetItem(it->weather));
+            m_ui->WeekWidget->setItem(count, 2, new QTableWidgetItem(it->training));
+            m_ui->WeekWidget->setItem(count, 3, new QTableWidgetItem(it->daily_objective));
+            m_ui->WeekWidget->setItem(count, 4, new QTableWidgetItem(QString::number(it->TSS)));
+            m_ui->WeekWidget->setItem(count, 5, new QTableWidgetItem(QString::number(it->TSS_objective)));
+            m_ui->WeekWidget->setItem(count, 6, new QTableWidgetItem(QString::number(it->Km_per_day)));
+            m_ui->WeekWidget->setItem(count, 7, new QTableWidgetItem(QString::number(it->km_per_week_objective)));
+            m_ui->WeekWidget->setItem(count, 8, new QTableWidgetItem(QString::number(it->feeling)));
+            m_ui->WeekWidget->setItem(count, 9, new QTableWidgetItem(QString::number(it->hour)));
+            m_ui->WeekWidget->setItem(count, 10, new QTableWidgetItem(QString::number(it->hour_objective)));
+            m_ui->WeekWidget->setItem(count, 11, new QTableWidgetItem(it->muscu));
+            m_ui->WeekWidget->setItem(count, 12, new QTableWidgetItem(it->muscu_objective));
+            count++;
+        }
+    }
+}
+
+void ThemeWidget::updateUI()
+{
+    updateCalendar();
+    updateMyWeek();
+
+    // TODO: move to updatePlan (plan page)
+    QDate today = QDate::currentDate();
+    m_ui->dateEdit->setDate(today);
+}
+
+void ThemeWidget::saveTrainingPlan()
+{
+    std::cout<<"Add item in training plans"<<std::endl;
+    TrainingItem tmp = blankDay();
+    bool found_in_db = false;
+    // Search for an other training on the same day
+    for (auto it = mTrainings.begin(); it!= mTrainings.end(); it++) {
+        if (it->date == m_ui->dateEdit->date()) {
+            // TODO: ask if we want to override
+            tmp = *it;
+            found_in_db = true;
+            break;
+        }
+    }
+    //date, weather, training, tss, km, hour
+    tmp.date = m_ui->dateEdit->date();
+    tmp.weather = m_ui->comboBox->currentText();
+    tmp.daily_objective = m_ui->textEdit->toPlainText();
+    tmp.TSS_objective = m_ui->spinBox->value();
+    tmp.km_per_week_objective = m_ui->spinBox_2->value();
+    tmp.hour_objective = m_ui->doubleSpinBox->value();
+
+    if (found_in_db) {
+        // TODO: make sur we want to override
+        for (TrainingItem &c : mTrainings) {
+            if (c.date == tmp.date) {
+                c = tmp;
+                // TODO: Success message, can be disabled
+                break;
+            }
+        }
+    } else {
+        mTrainings.push_back(tmp);
+    }
+    updateUI();
+}
+
+void ThemeWidget::saveWorkout()
+{
+    std::cout<<"Activity saved into training plans"<<std::endl;
+    updateUI();
+}
+
+void ThemeWidget::saveToFile()
+{
+    saveTrainingsToFile("test_training.csv", mTrainings);
+}
