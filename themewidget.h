@@ -50,6 +50,8 @@ typedef QList<DataList> DataTable;
 
 QT_CHARTS_USE_NAMESPACE
 
+class TrainingItem;
+
 class ThemeWidget: public QWidget
 {
     Q_OBJECT
@@ -80,6 +82,7 @@ private:
     QList<QChartView *> m_charts;
     DataTable m_dataTable;
     QStringList mTableHeader;
+    std::vector<TrainingItem> mTrainings;
 
     Ui_ThemeWidgetForm *m_ui;
 };

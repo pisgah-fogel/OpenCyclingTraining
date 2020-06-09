@@ -295,8 +295,8 @@ ThemeWidget::ThemeWidget(QWidget *parent) :
     m_ui->CalendarWidget->setItem(0, 1, new QTableWidgetItem("Hello"));
 
     debugGenerateTraining();
-    std::vector<TrainingItem> tmp = loadTrainingsFromFile("test_training.csv");
-    debugPrintTraining(tmp);
+    mTrainings = loadTrainingsFromFile("test_training.csv");
+    debugPrintTraining(mTrainings);
 
     updateUI();
 }
