@@ -237,7 +237,7 @@ TrainingItem blankDay() {
     tmp.Km_per_day = 0;
     tmp.hour_objective = 0;
     tmp.TSS_objective = 0;
-    tmp.category = QString("Base week");
+    tmp.category = QString();
     tmp.muscu = QString();
     tmp.muscu_objective = QString();
     tmp.km_per_week_objective = 0;
@@ -615,7 +615,7 @@ void ThemeWidget::saveTrainingPlan()
     dayfound->TSS_objective = m_ui->spinBox->value();
     dayfound->km_per_week_objective = m_ui->spinBox_2->value();
     dayfound->hour_objective = m_ui->doubleSpinBox->value();
-    orderVector();
+
     updateUI();
 }
 
@@ -632,6 +632,45 @@ void ThemeWidget::orderVector()
 void ThemeWidget::saveWorkout()
 {
     std::cout<<"Activity saved into training plans"<<std::endl;
+
+    std::vector<TrainingItem>::iterator dayfound = mTrainings.end();
+    std::vector<TrainingItem>::iterator inserthere = mTrainings.end();
+
+    // Search for an other training on the same day
+    for (auto it = mTrainings.begin(); it!= mTrainings.end(); it++) {
+        if (it->date == m_ui->dateEdit->date()) {
+            dayfound = it;
+            break;
+        }
+    }
+    if (dayfound == mTrainings.end()) {
+        for (auto it = mTrainings.begin(); it!= mTrainings.end() && it->date.daysTo(m_ui->dateEdit->date()) > 0; it++)
+            inserthere = it+1;
+        TrainingItem tmp = blankDay();
+        dayfound = mTrainings.insert(inserthere, tmp);
+    }
+
+    std::cout<<"Add training"<<std::endl;
+    dayfound->date = m_ui->dateEdit->date(); // make sure of the date
+    if (dayfound->weather.size() == 0 || dayfound->weather.compare("Clear")) // Overwrite if nothing of clear sky
+        dayfound->weather = m_ui->comboBox->currentText();
+
+    if(dayfound->training.size() > 0)
+        dayfound->training.append("; ");
+    dayfound->training.append(m_ui->CommentLineEdit->text());
+
+    dayfound->TSS += m_ui->TSSSpinBox->value();
+
+    dayfound->Km_per_day += m_ui->KmDoubleSpinBox->value();
+
+    dayfound->feeling = m_ui->FeelingSpinBox->value(); // Overwrite feeling
+
+    dayfound->hour += m_ui->DurationDoubleSpinBox->value();
+
+    if(dayfound->muscu.size() > 0)
+        dayfound->muscu.append("; ");
+    dayfound->muscu.append(m_ui->MuscuLineEdit->text());
+
     updateUI();
 }
 

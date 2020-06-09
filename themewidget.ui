@@ -56,7 +56,33 @@
             </widget>
            </item>
            <item>
-            <widget class="QLineEdit" name="MeteoLineEdit"/>
+            <widget class="QComboBox" name="WeatherCombo">
+             <item>
+              <property name="text">
+               <string>Clear</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>Cloudy</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>Dark</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>Rain/Snow</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>Storm</string>
+              </property>
+             </item>
+            </widget>
            </item>
           </layout>
          </item>
@@ -671,7 +697,6 @@
   </layout>
  </widget>
  <tabstops>
-  <tabstop>MeteoLineEdit</tabstop>
   <tabstop>DurationDoubleSpinBox</tabstop>
  </tabstops>
  <resources/>
