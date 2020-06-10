@@ -51,6 +51,7 @@ typedef QList<DataList> DataTable;
 QT_CHARTS_USE_NAMESPACE
 
 class TrainingItem;
+class TrainingWeek;
 
 class ThemeWidget: public QWidget
 {
@@ -65,6 +66,7 @@ private Q_SLOTS:
     void saveWorkout();
     void saveToFile();
     void orderVector();
+    void updateWeekSummary();
 
 private:
     DataTable generateRandomData(int listCount, int valueMax, int valueCount) const;
@@ -89,6 +91,7 @@ private:
     DataTable m_dataTable;
     QStringList mTableHeader;
     std::vector<TrainingItem> mTrainings;
+    std::vector<TrainingWeek> mWeeks;
 
     Ui_ThemeWidgetForm *m_ui;
 };

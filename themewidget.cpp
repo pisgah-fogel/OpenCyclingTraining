@@ -59,6 +59,21 @@
 #include <QtWidgets/QApplication>
 #include <QtCharts/QValueAxis>
 
+class TrainingWeek {
+public:
+        int week_number;
+        int year;
+        int month;
+        double sum_hour;
+        double sum_tss;
+        double sum_km;
+        double sum_hour_objective;
+        double sum_tss_objective;
+        double sum_km_objective;
+        QString category;
+        QString comment;
+};
+
 class TrainingItem {
 public:
     QString weather;
@@ -212,6 +227,22 @@ TrainingItem blankDay() {
     tmp.km_per_week_objective = 0;
     tmp.hour_per_week_objective = 0;
     tmp.TSS_per_week_objective = 0;
+    return tmp;
+}
+
+TrainingWeek blankWeek() {
+    TrainingWeek tmp;
+    tmp.week_number = 0;
+    tmp.year = 0;
+    tmp.month = 0;
+    tmp.sum_hour = 0;
+    tmp.sum_tss = 0;
+    tmp.sum_km = 0;
+    tmp.sum_hour_objective = 0;
+    tmp.sum_tss_objective = 0;
+    tmp.sum_km_objective = 0;
+    QString category = QString();
+    QString comment = QString();
     return tmp;
 }
 
@@ -714,4 +745,29 @@ void ThemeWidget::saveWorkout()
 void ThemeWidget::saveToFile()
 {
     saveTrainingsToFile("test_training.csv", mTrainings);
+}
+
+void ThemeWidget::updateWeekSummary()
+{
+    mWeeks.clear();
+    TrainingWeek tmp = blankWeek();
+    for (auto it = mTrainings.begin(); it!= mTrainings.end(); it++) {
+        if (tmp.year == it->date.year() && tmp.week_number == it->date.weekNumber()) {
+            tmp.sum_hour += it->hour;
+            tmp.sum_tss += it->TSS;
+            tmp.sum_km += it->Km_per_day;
+            tmp.sum_hour_objective += it->hour_objective;
+            tmp.sum_tss_objective += it->TSS_objective;
+            tmp.sum_km_objective += it->km_per_week_objective;
+            if (!it->category.isEmpty())
+                tmp.category = it->category;
+        } else {
+            if (tmp.sum_hour != 0 || tmp.sum_km != 0 || tmp.sum_tss == 0)
+                mWeeks.push_back(tmp);
+            tmp = blankWeek();
+            tmp.week_number = it->date.weekNumber();
+            tmp.year = it->date.year();
+            tmp.month = it->date.month();
+        }
+    }
 }
