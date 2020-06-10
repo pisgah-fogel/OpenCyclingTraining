@@ -612,16 +612,23 @@ void ThemeWidget::saveTrainingPlan()
     dayfound->km_per_week_objective = m_ui->spinBox_2->value();
     dayfound->hour_objective = m_ui->doubleSpinBox->value();
 
-    saveToFile();
-    updateUI();
+    orderVector();
 }
 
 void ThemeWidget::orderVector()
 {
-    for (auto it = mTrainings.begin(); it!= mTrainings.end(); it++) {
-        auto it2 = it+1;
-        if ( it2 != mTrainings.end() && it->date.daysTo(it2->date) > 0) {
-            std::rotate(it, it2, it2);
+   int i=0;
+    while(i>=0 && i<mTrainings.size()-1) {
+        if (mTrainings[i].date.daysTo(mTrainings[i+1].date) < 0) {
+            std::cout<<"Training order error: "<<mTrainings[i].date.toString().toStdString()<<" is after "<<mTrainings[i+1].date.toString().toStdString()<<std::endl;
+            TrainingItem tmp = mTrainings[i+1];
+            mTrainings[i+1] = mTrainings[i];
+            mTrainings[i] = tmp;
+            i-=2;
+            if (i<0)
+                i=0;
+        } else {
+            i++;
         }
     }
     saveToFile();
@@ -678,8 +685,7 @@ void ThemeWidget::saveWorkout()
             dayfound->muscu.append("; ");
         dayfound->muscu.append(m_ui->MuscuLineEdit->text());
     }
-    saveToFile();
-    updateUI();
+    orderVector();
 }
 
 void ThemeWidget::saveToFile()
