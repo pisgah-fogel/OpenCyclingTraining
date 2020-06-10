@@ -523,16 +523,29 @@ QChart *ThemeWidget::createScatterChart() const
     return chart;
 }
 
+QColor computeColor(double done, double todo) {
+    int red = 255*(1-done/todo);
+    int green = 255*done/todo;
+    red = (red<0)?0: red;
+    red = (red>255)?255: red;
+    green = (green<0)?0: green;
+    green = (green>255)?255: green;
+    return QColor(red, green, 0, 127);
+}
+
 void ThemeWidget::updateCalendar() {
     m_ui->CalendarWidget->setRowCount(mTrainings.size());
     size_t item_count = 0;
     m_ui->CalendarWidget->clearContents();
+    QTableWidgetItem *test;
     for (auto it = mTrainings.begin(); it!= mTrainings.end(); it++) {
         m_ui->CalendarWidget->setItem(item_count, 0, new QTableWidgetItem(it->date.toString()));
         m_ui->CalendarWidget->setItem(item_count, 1, new QTableWidgetItem(it->weather));
         m_ui->CalendarWidget->setItem(item_count, 2, new QTableWidgetItem(it->training));
         m_ui->CalendarWidget->setItem(item_count, 3, new QTableWidgetItem(it->daily_objective));
-        m_ui->CalendarWidget->setItem(item_count, 4, new QTableWidgetItem(QString::number(it->TSS)));
+        test = new QTableWidgetItem(QString::number(it->TSS));
+        test->setBackgroundColor(computeColor(it->TSS, it->TSS_objective));
+        m_ui->CalendarWidget->setItem(item_count, 4, test);
         m_ui->CalendarWidget->setItem(item_count, 5, new QTableWidgetItem(QString::number(it->TSS_objective)));
         m_ui->CalendarWidget->setItem(item_count, 6, new QTableWidgetItem(QString::number(it->Km_per_day)));
         m_ui->CalendarWidget->setItem(item_count, 7, new QTableWidgetItem(QString::number(it->km_per_week_objective)));
