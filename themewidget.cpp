@@ -624,6 +624,8 @@ void ThemeWidget::orderVector()
             std::rotate(it, it2, it2);
         }
     }
+    saveToFile();
+    updateUI();
 }
 
 void ThemeWidget::saveWorkout()

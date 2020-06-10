@@ -14,7 +14,7 @@
    <item>
     <widget class="QTabWidget" name="TabWidget">
      <property name="currentIndex">
-      <number>2</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="GraphPage">
       <attribute name="title">
@@ -36,6 +36,13 @@
       <layout class="QVBoxLayout" name="verticalLayout_2">
        <item>
         <widget class="QTableWidget" name="CalendarWidget"/>
+       </item>
+       <item>
+        <widget class="QPushButton" name="pushButton_2">
+         <property name="text">
+          <string>Re-order</string>
+         </property>
+        </widget>
        </item>
       </layout>
      </widget>
@@ -782,10 +789,27 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>pushButton_2</sender>
+   <signal>clicked()</signal>
+   <receiver>ThemeWidgetForm</receiver>
+   <slot>orderVector()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>464</x>
+     <y>567</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1106</x>
+     <y>528</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>updateUI()</slot>
   <slot>saveTrainingPlan()</slot>
   <slot>saveWorkout()</slot>
+  <slot>orderVector()</slot>
  </slots>
 </ui>
