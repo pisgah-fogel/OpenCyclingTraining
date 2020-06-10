@@ -262,38 +262,21 @@ ThemeWidget::ThemeWidget(QWidget *parent) :
     m_listCount(3),
     m_valueMax(10),
     m_valueCount(7),
-    m_dataTable(generateRandomData(m_listCount, m_valueMax, m_valueCount)),
     m_ui(new Ui_ThemeWidgetForm)
 {
     m_ui->setupUi(this);
 
-    //create charts
+    mTrainings = loadTrainingsFromFile("test_training.csv");
+    debugPrintTraining(mTrainings);
+    updateWeekSummary();
 
+    // Create charts
     QChartView *chartView;
-
-    chartView = new QChartView(createAreaChart());
-    m_ui->GraphGrid->addWidget(chartView, 1, 0);
-    m_charts << chartView;
-
-    chartView = new QChartView(createPieChart());
-    // Funny things happen if the pie slice labels do not fit the screen, so we ignore size policy
-    chartView->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
-    m_ui->GraphGrid->addWidget(chartView, 1, 1);
-    m_charts << chartView;
-
-    //![5]
+    /*
     chartView = new QChartView(createLineChart());
     m_ui->GraphGrid->addWidget(chartView, 1, 2);
-    //![5]
     m_charts << chartView;
-
-    chartView = new QChartView(createBarChart(m_valueCount));
-    m_ui->GraphGrid->addWidget(chartView, 2, 0);
-    m_charts << chartView;
-
-    chartView = new QChartView(createSplineChart());
-    m_ui->GraphGrid->addWidget(chartView, 2, 1);
-    m_charts << chartView;
+    */
 
     chartView = new QChartView(createScatterChart());
     m_ui->GraphGrid->addWidget(chartView, 2, 2);
@@ -320,9 +303,6 @@ ThemeWidget::ThemeWidget(QWidget *parent) :
     QDate today = QDate::currentDate();
     m_ui->dateEdit->setDate(today);
 
-    mTrainings = loadTrainingsFromFile("test_training.csv");
-    debugPrintTraining(mTrainings);
-
     updateUI();
 }
 
@@ -331,27 +311,7 @@ ThemeWidget::~ThemeWidget()
     delete m_ui;
 }
 
-DataTable ThemeWidget::generateRandomData(int listCount, int valueMax, int valueCount) const
-{
-    DataTable dataTable;
-
-    // generate random data
-    for (int i(0); i < listCount; i++) {
-        DataList dataList;
-        qreal yValue(0);
-        for (int j(0); j < valueCount; j++) {
-            yValue = yValue + QRandomGenerator::global()->bounded(valueMax / (qreal) valueCount);
-            QPointF value((j + QRandomGenerator::global()->generateDouble()) * ((qreal) m_valueMax / (qreal) valueCount),
-                          yValue);
-            QString label = "Slice " + QString::number(i) + ":" + QString::number(j);
-            dataList << Data(value, label);
-        }
-        dataTable << dataList;
-    }
-
-    return dataTable;
-}
-
+/*
 QChart *ThemeWidget::createAreaChart() const
 {
     QChart *chart = new QChart();
@@ -389,7 +349,8 @@ QChart *ThemeWidget::createAreaChart() const
 
     return chart;
 }
-
+*/
+/*
 QChart *ThemeWidget::createBarChart(int valueCount) const
 {
     Q_UNUSED(valueCount);
@@ -414,7 +375,8 @@ QChart *ThemeWidget::createBarChart(int valueCount) const
 
     return chart;
 }
-
+*/
+/*
 QChart *ThemeWidget::createLineChart() const
 {
     //![1]
@@ -449,28 +411,8 @@ QChart *ThemeWidget::createLineChart() const
 
     return chart;
 }
-
-QChart *ThemeWidget::createPieChart() const
-{
-    QChart *chart = new QChart();
-    chart->setTitle("Pie chart");
-
-    QPieSeries *series = new QPieSeries(chart);
-    for (const Data &data : m_dataTable[0]) {
-        QPieSlice *slice = series->append(data.second, data.first.y());
-        if (data == m_dataTable[0].first()) {
-            // Show the first slice exploded with label
-            slice->setLabelVisible();
-            slice->setExploded();
-            slice->setExplodeDistanceFactor(0.5);
-        }
-    }
-    series->setPieSize(0.4);
-    chart->addSeries(series);
-
-    return chart;
-}
-
+*/
+/*
 QChart *ThemeWidget::createSplineChart() const
 {
     QChart *chart = new QChart();
@@ -496,26 +438,25 @@ QChart *ThemeWidget::createSplineChart() const
     axisY->setLabelFormat("%.1f  ");
     return chart;
 }
+*/
 
 QChart *ThemeWidget::createScatterChart() const
 {
     // scatter chart
     QChart *chart = new QChart();
-    chart->setTitle("Scatter chart");
-    QString name("Series ");
-    int nameIndex = 0;
-    for (const DataList &list : m_dataTable) {
-        QScatterSeries *series = new QScatterSeries(chart);
-        for (const Data &data : list)
-            series->append(data.first);
-        series->setName(name + QString::number(nameIndex));
-        nameIndex++;
-        chart->addSeries(series);
+    chart->setTitle("Distance per week");
+
+    QScatterSeries *serie = new QScatterSeries(chart);
+    serie->setName(QString("Km"));
+    for (const TrainingWeek &tmp : mWeeks) {
+        serie->append(QPoint(tmp.week_number, tmp.sum_km)); // TODO handle many years
+        std::cout<<"Week "<<tmp.week_number<<": "<<tmp.sum_km<<"km"<<std::endl;
     }
+    chart->addSeries(serie);
 
     chart->createDefaultAxes();
-    chart->axes(Qt::Horizontal).first()->setRange(0, m_valueMax);
-    chart->axes(Qt::Vertical).first()->setRange(0, m_valueCount);
+    //chart->axes(Qt::Horizontal).first()->setRange(0, m_valueMax);
+    //chart->axes(Qt::Vertical).first()->setRange(0, m_valueCount);
     // Add space to label to add space between labels and axis
     QValueAxis *axisY = qobject_cast<QValueAxis*>(chart->axes(Qt::Vertical).first());
     Q_ASSERT(axisY);
@@ -660,6 +601,7 @@ void ThemeWidget::updateMyWeek() {
 
 void ThemeWidget::updateUI()
 {
+    updateWeekSummary();
     updateCalendar();
     updateMyWeek();
 }
@@ -790,12 +732,20 @@ void ThemeWidget::updateWeekSummary()
             if (!it->category.isEmpty())
                 tmp.category = it->category;
         } else {
-            if (tmp.sum_hour != 0 || tmp.sum_km != 0 || tmp.sum_tss == 0)
+            if (tmp.sum_hour != 0 || tmp.sum_km != 0 || tmp.sum_tss != 0)
                 mWeeks.push_back(tmp);
             tmp = blankWeek();
             tmp.week_number = it->date.weekNumber();
             tmp.year = it->date.year();
             tmp.month = it->date.month();
+            tmp.sum_hour += it->hour;
+            tmp.sum_tss += it->TSS;
+            tmp.sum_km += it->Km_per_day;
+            tmp.sum_hour_objective += it->hour_objective;
+            tmp.sum_tss_objective += it->TSS_objective;
+            tmp.sum_km_objective += it->km_per_week_objective;
+            if (!it->category.isEmpty())
+                tmp.category = it->category;
         }
     }
 }

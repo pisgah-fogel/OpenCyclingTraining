@@ -69,16 +69,12 @@ private Q_SLOTS:
     void updateWeekSummary();
 
 private:
-    DataTable generateRandomData(int listCount, int valueMax, int valueCount) const;
+    DataTable generateWeekDistanceData() const;
     void populateThemeBox();
     void populateAnimationBox();
     void populateLegendBox();
     void connectSignals();
-    QChart *createAreaChart() const;
-    QChart *createBarChart(int valueCount) const;
-    QChart *createPieChart() const;
     QChart *createLineChart() const;
-    QChart *createSplineChart() const;
     QChart *createScatterChart() const;
     void updateMyWeek();
     void updateCalendar();
@@ -88,7 +84,6 @@ private:
     int m_valueMax;
     int m_valueCount;
     QList<QChartView *> m_charts;
-    DataTable m_dataTable;
     QStringList mTableHeader;
     std::vector<TrainingItem> mTrainings;
     std::vector<TrainingWeek> mWeeks;
