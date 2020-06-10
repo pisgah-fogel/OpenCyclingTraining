@@ -523,8 +523,12 @@ void ThemeWidget::updateMyWeek() {
     // Search training of the week
     size_t count = 0;
     m_ui->WeekWidget->clearContents();
+    double sum_km_done = 0;
+    double sum_km_objective = 0;
     for (auto it = mTrainings.begin(); it!= mTrainings.end(); it++) {
         if (today.weekNumber() == it->date.weekNumber()) {
+            sum_km_done += it->Km_per_day;
+            sum_km_objective += it->km_per_week_objective;
             m_ui->WeekWidget->setItem(count, 0, new QTableWidgetItem(it->date.toString()));
             m_ui->WeekWidget->setItem(count, 1, new QTableWidgetItem(it->weather));
             m_ui->WeekWidget->setItem(count, 2, new QTableWidgetItem(it->training));
@@ -574,6 +578,10 @@ void ThemeWidget::updateMyWeek() {
             }
         }
     }
+
+    m_ui->progressBar_6->setValue(100*sum_km_done/sum_km_objective);
+    m_ui->label_36->setText(QString::number(sum_km_done));
+    m_ui->label_38->setText(QString::number(sum_km_objective));
 }
 
 void ThemeWidget::updateUI()
