@@ -67,6 +67,9 @@ private Q_SLOTS:
     void saveToFile();
     void orderVector();
     void updateWeekSummary();
+    void updateFatigue();
+    void updateFitness();
+    void updateForm();
 
 private:
     DataTable generateWeekDistanceData() const;
@@ -87,6 +90,9 @@ private:
     QStringList mTableHeader;
     std::vector<TrainingItem> mTrainings;
     std::vector<TrainingWeek> mWeeks;
+    std::vector<std::pair<QDate,double>> mFatigue;
+    std::vector<std::pair<QDate,double>> mFitness;
+    std::vector<std::pair<QDate,double>> mForm;
 
     Ui_ThemeWidgetForm *m_ui;
 };

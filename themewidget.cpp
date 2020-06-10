@@ -59,6 +59,11 @@
 #include <QtWidgets/QApplication>
 #include <QtCharts/QValueAxis>
 
+const double fatigue_coef[] = {0.06, 0.07, 0.09, 0.14, 0.19, 0.22, 0.23};
+
+const double fitness_coef_factor = 1.4;
+const double fitness_coef[] = {0.007,0.008,0.009,0.01,0.011,0.012,0.013,0.014,0.015,0.016,0.017,0.018,0.019,0.02,0.021,0.022,0.023,0.025,0.026,0.027,0.028,0.03,0.0315,0.032,0.032,0.033,0.034,0.035,0.036,0.037,0.037,0.037,0.036,0.035,0.034,0.0335,0.033,0.032,0.031};
+
 class TrainingWeek {
 public:
         int week_number;
@@ -269,6 +274,7 @@ ThemeWidget::ThemeWidget(QWidget *parent) :
     mTrainings = loadTrainingsFromFile("test_training.csv");
     debugPrintTraining(mTrainings);
     updateWeekSummary();
+    updateFatigue();
 
     // Create charts
     QChartView *chartView;
@@ -748,4 +754,37 @@ void ThemeWidget::updateWeekSummary()
                 tmp.category = it->category;
         }
     }
+}
+
+void ThemeWidget::updateFatigue() {
+    mFatigue.clear();
+    if (mTrainings.size() <= sizeof(fatigue_coef)/sizeof(double)) {
+        std::cout<<"Too few data to compute Fatigue ("<<sizeof(fatigue_coef)/sizeof(double)<<" required, "<<mTrainings.size()<<" available)"<<std::endl;
+        return;
+    }
+    size_t count = 0;
+    QDate current_date;
+    double current_fatigue;
+    for (auto it = mTrainings.begin(); it!= mTrainings.end(); it++) {
+        if (count > sizeof(fatigue_coef)/sizeof(double)) {
+            current_date = it->date;
+            current_fatigue = 0;
+            std::vector<TrainingItem>::iterator it2 = it-sizeof(fatigue_coef)/sizeof(double);
+            for(int i =sizeof(fatigue_coef)/sizeof(double)-1; i>=0; i--) {
+                current_fatigue += fatigue_coef[i]*it2->TSS;
+                it2++;
+            }
+            mFatigue.push_back(std::pair<QDate, double>(current_date,current_fatigue));
+            std::cout<<"Fatigue for "<<current_date.toString().toStdString()<<": "<<current_fatigue<<std::endl;
+        }
+        count++;
+    }
+}
+
+void ThemeWidget::updateFitness() {
+
+}
+
+void ThemeWidget::updateForm() {
+
 }
