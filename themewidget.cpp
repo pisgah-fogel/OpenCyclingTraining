@@ -579,6 +579,7 @@ void ThemeWidget::updateMyWeek() {
     double sum_hour_objective = 0;
     double sum_tss_done = 0;
     double sum_tss_objective = 0;
+    QTableWidgetItem *test;
     for (auto it = mTrainings.begin(); it!= mTrainings.end(); it++) {
         if (today.weekNumber() == it->date.weekNumber()) {
             sum_km_done += it->Km_per_day;
@@ -591,12 +592,20 @@ void ThemeWidget::updateMyWeek() {
             m_ui->WeekWidget->setItem(count, 1, new QTableWidgetItem(it->weather));
             m_ui->WeekWidget->setItem(count, 2, new QTableWidgetItem(it->training));
             m_ui->WeekWidget->setItem(count, 3, new QTableWidgetItem(it->daily_objective));
-            m_ui->WeekWidget->setItem(count, 4, new QTableWidgetItem(QString::number(it->TSS)));
+            test = new QTableWidgetItem(QString::number(it->TSS));
+            test->setBackgroundColor(computeColor(it->TSS, it->TSS_objective));
+            m_ui->WeekWidget->setItem(count, 4, test);
             m_ui->WeekWidget->setItem(count, 5, new QTableWidgetItem(QString::number(it->TSS_objective)));
-            m_ui->WeekWidget->setItem(count, 6, new QTableWidgetItem(QString::number(it->Km_per_day)));
+            test = new QTableWidgetItem(QString::number(it->Km_per_day));
+            test->setBackgroundColor(computeColor(it->Km_per_day, it->km_per_week_objective));
+            m_ui->WeekWidget->setItem(count, 6, test);
             m_ui->WeekWidget->setItem(count, 7, new QTableWidgetItem(QString::number(it->km_per_week_objective)));
-            m_ui->WeekWidget->setItem(count, 8, new QTableWidgetItem(QString::number(it->feeling)));
-            m_ui->WeekWidget->setItem(count, 9, new QTableWidgetItem(QString::number(it->hour)));
+            test =  new QTableWidgetItem(QString::number(it->feeling));
+            test->setBackgroundColor(computeColor(it->feeling, 6));
+            m_ui->WeekWidget->setItem(count, 8, test);
+            test = new QTableWidgetItem(QString::number(it->hour));
+            test->setBackgroundColor(computeColor(it->hour, it->hour_objective));
+            m_ui->WeekWidget->setItem(count, 9, test);
             m_ui->WeekWidget->setItem(count, 10, new QTableWidgetItem(QString::number(it->hour_objective)));
             m_ui->WeekWidget->setItem(count, 11, new QTableWidgetItem(it->muscu));
             m_ui->WeekWidget->setItem(count, 12, new QTableWidgetItem(it->muscu_objective));
